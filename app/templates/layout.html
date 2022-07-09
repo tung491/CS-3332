@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<head>
+    {% block head %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Simple Banking System</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+        <style>
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+                .container {
+   align-items: center;
+   justify-content: center;
+      height: 100vh;
+   font-size: 2.5rem;
+   max-width: 1000px;
+   margin: 0 auto;
+
+    }
+a:visited {
+  color: inherit;
+}
+
+        </style>
+    {% endblock %}
+</head>
+<body>
+
+<nav class="navbar" role="navigation">
+    <div class="navbar-brand">
+        <a class="navbar-brand" href="#">Simple Bank System</a>
+    </div>
+    <div class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item" href="/">Home</a>
+        </div>
+        {% if current_user.is_authenticated %}
+            <div class="navbar-item">
+                <a class="navbar-item" href="#">{{ current_user.name }}</a>
+            </div>
+            <div class="navbar-item">
+                <a class="navbar-item" href="/logout">Logout</a>
+            </div>
+        {% else %}
+            <div class="navbar-item">
+                <a class="navbar-item" href="/login">Login</a>
+            </div>
+        {% endif %}
+    </div>
+</nav>
+
+
+<div class="container">
+
+    {% block main %}{% endblock %}
+
+</div> <!-- /container -->
+
+{% block scripts %}
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.0-rc2/js/bootstrap.min.js
+"></script>
+    <script src="/static/js/main.js"></script>
+
+{% endblock %}
+</body>
+</html>
