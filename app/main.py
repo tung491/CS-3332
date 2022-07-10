@@ -12,7 +12,7 @@ from app.core.salts.models import SaltGetOnePayload
 from app.core.salts.services import SaltsGetOneService
 from app.core.users.models import UserGetOnePayload
 from app.dependencies.cards import card_check_pin_service
-from app.routers.user_side.transactions import user_transactions_app
+from app.routers.user_side import user_transactions_app
 from app.settings import Settings
 
 
@@ -63,18 +63,11 @@ def login():
     if check_pin_resp.match:
         flask_login.login_user(card_resp.extended_card)
         flask.flash('Logged in successfully.')
-        return flask.redirect(flask.url_for('protected'))
+        return flask.redirect(flask.url_for('/'))
     else:
         print("no match")
         flask.flash('Incorrect card number or PIN.')
         return "Invalid card number or PIN"
-
-
-
-@app.route('/protected')
-@flask_login.login_required
-def protected():
-    return 'Logged in as: ' + flask_login.current_user.name
 
 
 @app.route("/logout")

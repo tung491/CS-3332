@@ -3,7 +3,7 @@ import flask_login
 from flask import Blueprint, render_template, flash
 
 from app.adapters.database.postgres import PostgresCardAdapter
-from app.core.cards.models import CardGetExtendedOnePayload, CardChangeBalanceEvent, CardChangeBalancePayload
+from app.core.cards.models import CardGetExtendedOnePayload, CardChangeBalancePayload
 from app.core.cards.services import CardsGetExtendedOneService, CardsChangeBalanceService
 
 user_transactions_app = Blueprint('user_transactions_app', __name__, template_folder='templates')
@@ -47,4 +47,3 @@ def deposit():
     )
     flash("Deposit successful", "success")
     return render_template("user_deposit.html", balance=card.balance)
-
