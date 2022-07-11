@@ -2,7 +2,7 @@ from hashlib import sha512
 
 import flask
 import flask_login
-from flask import Flask, flash, redirect
+from flask import Flask, flash, redirect, session
 from flask_login import LoginManager, login_required, logout_user
 
 from app.adapters.database.postgres import PostgresUserAdapter, PostgresCardAdapter, PostgresSaltAdapter
@@ -63,7 +63,7 @@ def login():
     if check_pin_resp.match:
         flask_login.login_user(card_resp.extended_card)
         flask.flash('Logged in successfully.')
-        return flask.redirect(flask.url_for('/'))
+        return flask.redirect("/")
     else:
         print("no match")
         flask.flash('Incorrect card number or PIN.')

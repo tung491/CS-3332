@@ -1,15 +1,52 @@
 {% extends 'layout.html' %}
 {% block main %}
-    <div class="buttons">
-            <button class="button is-info">
-                <a href="/deposit">
-                    Cash deposit
-                </a>
-            </button>
-        <button class="button is-info">Cash withdraw</button>
-        <button class="button is-info">Balance enquiry</button>
-        <button class="button is-info">Change PIN number</button>
-        <button class="button is-info">Transfer money</button>
-        <button class="button is-info">Transaction history</button>
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Dashboard</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="container">
+        <div class="row" style="padding-bottom: 24px;">
+            <div class="col-md-6 d-xxl-flex justify-content-center align-items-center align-content-center align-items-xxl-center">
+                <button class="btn btn-primary btn-lg" type="button">
+                    <a class="button" href="/deposit">Cash deposit</a></button>
+            </div>
+            <div class="col-md-6 col-xxl-6 d-xxl-flex align-self-center my-auto mx-xl-auto justify-content-xxl-center">
+                <button class="btn btn-primary btn-lg d-xxl-flex justify-content-center align-items-center align-content-center align-items-xxl-center"
+                        type="button"><a class="button" href="/"></a>Change PIN code
+                </button>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom: 24px;">
+            <div class="col-md-6 d-xxl-flex justify-content-center align-items-center align-content-center align-items-xxl-center">
+                <button class="btn btn-primary btn-lg" type="button">
+                    <a href="/withdraw" class="button">Cash withdraw</a>
+                </button>
+            </div>
+            <div class="col-md-6 col-xxl-6 d-xxl-flex align-self-center my-auto mx-xl-auto justify-content-xxl-center">
+                <button class="btn btn-primary btn-lg d-xxl-flex justify-content-center align-items-center align-content-center align-items-xxl-center"
+                        type="button">
+                    <a href="/transfer" class="button">Transfer money</a>
+                </button>
+            </div>
+        </div>
+        <div class="row" style="padding-bottom: 24px;">
+            <div class="col-md-6 d-xxl-flex justify-content-center align-items-center align-content-center align-items-xxl-center">
+                <button class="btn btn-primary btn-lg" type="button">
+                    <a href="/balance-enquiry" class="button">Balance enquiry</a>
+                </button>
+            </div>
+            <div class="col-md-6 col-xxl-6 d-xxl-flex align-self-center my-auto mx-xl-auto justify-content-xxl-center">
+                <button class="btn btn-primary btn-lg d-xxl-flex justify-content-center align-items-center align-content-center align-items-xxl-center"
+                        type="button">
+                    <a href="/trx-history" class="button">Transaction history</a>
+                </button>
+            </div>
+        </div>
     </div>
 {% endblock %}

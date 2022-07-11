@@ -1,6 +1,6 @@
 import flask
 import flask_login
-from flask import Blueprint, render_template, flash
+from flask import Blueprint, render_template, flash, session
 
 from app.adapters.database.postgres import PostgresCardAdapter
 from app.core.cards.models import CardGetExtendedOnePayload, CardChangeBalancePayload
@@ -26,6 +26,10 @@ def deposit():
             )
     ).extended_card
     if flask.request.method == "GET":
+        try:
+            session['_flashes'].clear()
+        except KeyError:
+            pass
         return render_template("user_deposit.html", balance=card.balance)
     amount = flask.request.form["amount"]
     try:
@@ -40,9 +44,9 @@ def deposit():
     card.balance += float(amount)
     change_balance = CardsChangeBalanceService(card_adapter)
     resp = change_balance.change_balance(
-        CardChangeBalancePayload(
-            number=card.number,
-            balance=card.balance
+            CardChangeBalancePayload(
+                    number=card.number,
+                    balance=card.balance
             )
     )
     flash("Deposit successful", "success")
@@ -56,27 +60,31 @@ def withdraw():
     card_get_one_service = CardsGetExtendedOneService(card_adapter)
     card = card_get_one_service.get_extended_one(
             CardGetExtendedOnePayload(
-                    card_number = flask_login.current_user.number
+                    card_number=flask_login.current_user.number
             )
     ).extended_card
     if flask.request.method == "GET":
+        try:
+            session['_flashes'].clear()
+        except KeyError:
+            pass
         return render_template("user_withdraw.html", balance=card.balance)
     amount = flask.request.form["amount"]
     try:
         amount = float(amount)
     except ValueError:
-        flash ("Invalid input! Amount must be a number", "danger")
+        flash("Invalid input! Amount must be a number", "danger")
         return render_template("user_withdraw.html", balance=card.balance)
-    if 0 > amount > card.balance:
-        flash ("Invalid input! Amount must be positive number and smaller than balance", "danger")
+    if amount < 0 or amount > card.balance:
+        flash("Invalid input! Amount must be positive number and smaller than balance", "danger")
         return render_template("user_withdraw.html", balance=card.balance)
 
     card.balance -= amount
     change_balance = CardsChangeBalanceService(card_adapter)
     resp = change_balance.change_balance(
-        CardChangeBalancePayload(
-            number=card.number,
-            balance=card.balance
+            CardChangeBalancePayload(
+                    number=card.number,
+                    balance=card.balance
             )
     )
     flash("Withdraw successful", "success")

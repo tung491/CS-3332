@@ -1,17 +1,29 @@
 {% extends 'layout.html' %}
 {% block main %}
-    <form action="withdraw" method="POST">
-        <h1 class="title">Withdraw money from account</h1>
-        <p class="content">Balance: {{ balance }}</p>
-        <input class="input" type="text" name="amount" id="withdraw_amount" placeholder="The amount you want to withdraw">
-        <input class="button is-info" type="submit" value="Submit">
-        {% for category, message in get_flashed_messages(with_categories=True) %}
-            {% if message != '' %}
-                <div class="notification is-{{ category }}">
-                    <button class="delete"></button>
-                    {{ message }}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Withdraw money from account</h2>
+                    <p class="w-lg-50">Balance: {{ balance }}</p>
                 </div>
-            {% endif %}
-    {% endfor %}
+            </div>
+        </div>
+    </section>
+    <form action="/withdraw" method="POST">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 col-xxl-4 d-xxl-flex justify-content-xxl-center" style="padding-bottom: 0px;"><input class="form-control" type="text" name="amount" placeholder="The amount you want to withdraw"></div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 col-xxl-4 d-xxl-flex justify-content-xxl-center" style="padding-bottom: 0px;"><button class="btn btn-primary d-xxl-flex" type="submit" style="margin-top: 48px;padding-left: 15px;margin-left: 10px;margin-right: 30px;">Submit</button></div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
     </form>
 {% endblock %}
