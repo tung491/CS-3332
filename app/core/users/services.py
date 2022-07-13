@@ -60,7 +60,7 @@ class UsersCheckSecurityAnswerService(UserCheckSecurityAnswerUseCase):
 
     def check_security_answer(self, payload: UserCheckSecurityAnswerPayload) -> UserCheckSecurityAnswerEvent:
         try:
-            user = self.user_db_interface.check_security_answer(payload)
+            match = self.user_db_interface.check_security_answer(payload)
         except Exception as e:
             raise e
-        return UserGetOneEvent(user)
+        return UserCheckSecurityAnswerEvent(match=match)
