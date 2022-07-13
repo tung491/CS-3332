@@ -49,7 +49,7 @@ def login():
     )
     salt_resp = salt_get_one_service.get_one(
             SaltGetOnePayload(
-                    user_id=card_resp.extended_card.user_id,
+                    user_id=card_resp.data.user_id,
             )
     )
     pin_hash = sha512(f"{pin}{salt_resp.salt}".encode("utf-8")).hexdigest()
@@ -61,7 +61,7 @@ def login():
             )
     )
     if check_pin_resp.match:
-        flask_login.login_user(card_resp.extended_card)
+        flask_login.login_user(card_resp.data)
         flask.flash('Logged in successfully.')
         return flask.redirect("/")
     else:
@@ -93,7 +93,7 @@ def load_card(id):
         card = card_get_one_service.get_extended_one(
                 CardGetExtendedOnePayload(
                         card_number=int(id),
-                )).extended_card
+                )).data
     except Exception:
         return None
     if card.is_active:

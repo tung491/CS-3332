@@ -59,14 +59,13 @@ cards_table = Table(
 transactions_table = Table(
         'transactions', metadata,
         Column('id', Text, primary_key=True),
-        Column('debit_account_id', Text),
-        Column('credit_account_id', Text),
-        Column('withdrawal_amount', Float),
-        Column('deposit_amount', Float),
+        Column('card_number', Integer),
+        Column('credit_amount', Float),
+        Column('debit_amount', Float),
         Column('pre_tx_balance', Float),
         Column('post_tx_balance', Float),
         Column('message', Text),
-        Column('date', DateTime)
+        Column('timestamp', DateTime)
 )
 
 
@@ -238,10 +237,8 @@ class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface
     def get_all_transactions(self, payload: TransactionGetAllPayload) -> TransactionGetAllEvent:
         with self.connection.begin():
             query = transactions_table.select()
-            if payload.debit_account_id:
-                query = query.where(transactions_table.c.debit_account_id == payload.debit_account_id)
-            if payload.credit_account_id:
-                query = query.where(transactions_table.c.credit_account_id == payload.credit_account_id)
+            if payload.card_number:
+                query = query.where(transactions_table.c.card_number == payload.card_number)
             if payload.start_date:
                 query = query.where(transactions_table.c.date >= payload.start_date)
             if payload.end_date:
@@ -266,21 +263,28 @@ class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface
             )
 
     def add_transaction(self, payload: TransactionAddPayload) -> TransactionAddEvent:
-        with self.connection.begin():
-            self.connection.execute(
-                    transactions_table.insert().values(
-                            debit_account_id=payload.transaction.debit_account_id,
-                            credit_account_id=payload.transaction.credit_account_id,
-                            withdrawal_amount=payload.transaction.withdrawal_amount,
-                            deposit_amount=payload.transaction.deposit_amount,
-                            pre_tx_balance=payload.transaction.pre_tx_balance,
-                            post_tx_balance=payload.transaction.post_tx_balance,
-                            message=payload.transaction.message,
-                            date=payload.transaction.date,
-                    )
+        print(111)
+        try:
+            with self.connection.begin():
+                self.connection.execute(
+                        transactions_table.insert().values(
+                                id=payload.transaction.id,
+                                card_number=payload.transaction.card_number,
+                                credit_amount=payload.transaction.credit_amount,
+                                debit_amount=payload.transaction.debit_amount,
+                                pre_tx_balance=payload.transaction.pre_tx_balance,
+                                post_tx_balance=payload.transaction.post_tx_balance,
+                                message=payload.transaction.message,
+                                timestamp=payload.transaction.timestamp,
+                        )
+                )
+        except Exception:
+            return TransactionAddEvent(
+                    success=False,
+                    message="Transaction could not be added"
             )
         return TransactionAddEvent(
-                transaction=payload.transaction
+                data=payload.transaction
         )
 
     def delete_transaction(self, payload: TransactionDeletePayload) -> TransactionDeleteEvent:
@@ -296,23 +300,34 @@ class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface
 class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
 
     def get_extended_one(self, payload: CardGetExtendedOnePayload) -> CardGetExtendedOneEvent:
-        with self.connection.begin():
-            card = self.connection.execute(
-                    select(
-                            [
-                                cards_table.c.user_id,
-                                cards_table.c.number,
-                                cards_table.c.type,
-                                cards_table.c.locked,
-                                cards_table.c.balance,
-                                cards_table.c.pin,
-                                users_table.c.id, users_table.c.name, users_table.c.date_of_birth, users_table.c.email,
-                                users_table.c.security_question, users_table.c.security_answer, users_table.c.gender
-                            ]
-                    )
-                    .where(cards_table.c.number == payload.card_number)
-            ).fetchone()
-        print(card)
+        try:
+            with self.connection.begin():
+                card = self.connection.execute(
+                        select(
+                                [
+                                    cards_table.c.user_id,
+                                    cards_table.c.number,
+                                    cards_table.c.type,
+                                    cards_table.c.locked,
+                                    cards_table.c.balance,
+                                    cards_table.c.pin,
+                                    users_table.c.id, users_table.c.name, users_table.c.date_of_birth, users_table.c.email,
+                                    users_table.c.security_question, users_table.c.security_answer, users_table.c.gender
+                                ]
+                        )
+                        .where(cards_table.c.number == payload.card_number)
+                ).fetchone()
+        except Exception:
+            return CardGetExtendedOneEvent(
+                    success=False,
+                    message="Card could not be found"
+            )
+        else:
+            if card is None:
+                return CardGetExtendedOneEvent(
+                        success=False,
+                        message="Card could not be found"
+                )
         extended_card = ExtendedCard(
                 number=card.number,
                 user_id=card.user_id,
@@ -333,7 +348,7 @@ class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
         )
 
         return CardGetExtendedOneEvent(
-                extended_card=extended_card
+                data=extended_card
         )
 
     def get_one(self, payload: CardGetOnePayload) -> CardGetOneEvent:
@@ -433,6 +448,8 @@ class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
                     )
             )
         return CardChangeBalanceEvent(
+                success=True,
+                message="Balance changed",
                 data={'balance': payload.balance}
         )
 

@@ -30,7 +30,11 @@ class CardResponse(BaseModel):
     success: bool = True
     message: str = "Success"
     error_code: int = -1
-    data: Card
+    data: Optional[Card]
+
+
+class ExtendedCardResponse(CardResponse):
+    data: Optional[ExtendedCard]
 
 
 class CardGetOnePayload(BaseModel):
@@ -74,13 +78,13 @@ class CardUnlockEvent(CardResponse):
     ...
 
 
-class CardChangeBalancePayload(BaseModel):
+class   CardChangeBalancePayload(BaseModel):
     number: int
     balance: float
 
 
-class CardChangeBalanceEvent(BaseModel):
-    balance: float = 0.0
+class CardChangeBalanceEvent(CardResponse):
+    data: dict
 
 
 class CardCheckPINPayload(BaseModel):
@@ -105,5 +109,5 @@ class CardGetExtendedOnePayload(BaseModel):
     card_number: int
 
 
-class CardGetExtendedOneEvent(BaseModel):
-    extended_card: ExtendedCard
+class CardGetExtendedOneEvent(ExtendedCardResponse):
+    ...
