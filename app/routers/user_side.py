@@ -32,7 +32,7 @@ def deposit():
     ).data
     if flask.request.method == "GET":
         try:
-            session['_flashes'].clear()
+            session.pop('_flashes', None)
         except KeyError:
             pass
         return render_template("user_deposit.html", balance=card.balance)
@@ -70,7 +70,7 @@ def withdraw():
     ).data
     if flask.request.method == "GET":
         try:
-            session['_flashes'].clear()
+            session.pop('_flashes', None)
         except KeyError:
             pass
         return render_template("user_withdraw.html", balance=card.balance)
@@ -109,7 +109,7 @@ def transfer():
     ).data
     if flask.request.method == "GET":
         try:
-            session['_flashes'].clear()
+            session.pop('_flashes', None)
         except KeyError:
             pass
         return render_template("user_transfer.html", balance=card.balance)
@@ -184,3 +184,16 @@ def transfer():
     ).data
     flash("Transfer successful", "success")
     return render_template("user_transfer.html", balance=card.balance)
+
+
+@user_transactions_app.route("/balance-enquiry", methods=['GET'])
+@flask_login.login_required
+def balance():
+    card_adapter = PostgresCardAdapter()
+    card_get_one_service = CardsGetExtendedOneService(card_adapter)
+    card = card_get_one_service.get_extended_one(
+            CardGetExtendedOnePayload(
+                    card_number=flask_login.current_user.number
+            )
+    ).data
+    return render_template("user_balance_enquire.html", balance=card.balance)

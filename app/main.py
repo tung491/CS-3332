@@ -34,6 +34,7 @@ app.register_blueprint(user_transactions_app)
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if flask.request.method == "GET":
+        session.pop('_flashes', None)
         return flask.render_template("login_form.html")
     card_number = flask.request.form["card_number"]
     pin = flask.request.form["pin"]
@@ -47,6 +48,9 @@ def login():
                     card_number=card_number,
             )
     )
+    if card_resp.data is None:
+        flash("Incorrect card number or PIN.", "danger")
+        return flask.render_template("login_form.html")
     salt_resp = salt_get_one_service.get_one(
             SaltGetOnePayload(
                     user_id=card_resp.data.user_id,
@@ -65,9 +69,9 @@ def login():
         flask.flash('Logged in successfully.')
         return flask.redirect("/")
     else:
-        print("no match")
-        flask.flash('Incorrect card number or PIN.')
-        return "Invalid card number or PIN"
+        flask.flash('Incorrect card number or PIN.', 'danger')
+        return flask.render_template("login_form.html")
+
 
 
 @app.route("/logout")

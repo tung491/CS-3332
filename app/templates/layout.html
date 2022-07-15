@@ -30,7 +30,11 @@ a:active {color: #ffffff;}  /* Selected link   */        </style>
                     </ul>
                     <div class="d-md-none my-2"><button class="btn btn-light me-2" type="button">Button</button><button class="btn btn-primary" type="button">Button</button></div>
                 </div>
-                <div class="d-none d-md-block"><a class="btn btn-primary" role="button" href="/login">Login</a></div>
+                {% if current_user.is_authenticated %}
+                   <div class="d-none d-md-block"><a class="btn btn-info" role="button" href="/logout">Logout</a></div>
+                {% else %}
+                    <div class="d-none d-md-block"><a class="btn btn-primary" role="button" href="/login">Login</a></div>
+                {% endif %}
             </div>
         </nav>
     </div>
