@@ -3,13 +3,13 @@ from datetime import datetime
 
 import flask
 import flask_login
-from flask import Blueprint, render_template, flash, session
+from flask import Blueprint, render_template, flash, session, request
 
 from app.adapters.database.postgres import PostgresCardAdapter, PostgresTransactionAdapter
 from app.core.cards.models import CardGetExtendedOnePayload, CardChangeBalancePayload
 from app.core.cards.services import CardsGetExtendedOneService, CardsChangeBalanceService
-from app.core.transactions.models import TransactionAddPayload, Transaction
-from app.core.transactions.services import TransactionsAddService
+from app.core.transactions.models import TransactionAddPayload, Transaction, TransactionGetAllPayload
+from app.core.transactions.services import TransactionsAddService, TransactionsGetAllService
 
 user_transactions_app = Blueprint('user_transactions_app', __name__, template_folder='templates')
 
@@ -197,3 +197,16 @@ def balance():
             )
     ).data
     return render_template("user_balance_enquire.html", balance=card.balance)
+
+
+@user_transactions_app.route("/balance-enquiry", methods=['GET'])
+@flask_login.login_required
+def query_transaction():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    transaction_adapter = PostgresTransactionAdapter()
+    transaction_get_all_service = TransactionsGetAllService(transaction_adapter)
+    transactions = transaction_get_all_service.get_all(TransactionGetAllPayload(
+        card_number=flask_login.current_user.number, start_date=start_date, end_date=end_date
+    )).data
+    return render_template("user_transactions.html", transactions=transactions)
