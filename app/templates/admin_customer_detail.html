@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 style="margin-top: 32px;margin-bottom: -9px;">Customer {{ user.name }} [{{ user.id }}]</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div class="table-responsive" style="margin-top: 52px;">
+        <table class="table">
+            <thead>
+            </thead>
+            <tbody>
+            <tr>
+                <td><strong>ID</strong></td>
+                <td>{{ user.id }}</td>
+            </tr>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>{{ user.name }}</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>{{ user.email }}</td>
+            </tr>
+            <tr>
+                <td><strong>Gender</strong></td>
+                <td>{{ user.gender }}</td>
+            </tr>
+            <tr>
+                <td><strong>Date of Birth</strong></td>
+                <td>{{ user.date_of_birth }}</td>
+            </tr>
+            <tr>
+                <td><strong>Security question</strong></td>
+                <td>{{ user.security_question }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row mb-5">
+        <div class="col-md-8 col-xl-6 text-center mx-auto" style="margin-top: 49px;">
+            <h2 style="margin-top: 32px;margin-bottom: -9px;">Customer's cards</h2>
+            <p class="w-lg-50"></p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Number</th>
+                <th>User ID</th>
+                <th>Type</th>
+                <th>Locked</th>
+                <th>Balance</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for card in cards %}
+                <tr>
+                    <td>{{ card.number }}</td>
+                    <td>{{ card.user_id }}</td>
+                    <td>{{ card.type }}</td>
+                    <td>{{ card.locked }}</td>
+                    <td>{{ card.balance }}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" aria-expanded="false"
+                                    data-bs-toggle="dropdown" type="button">Actions
+                            </button>
+                            <div class="dropdown-menu">
+                                {% if card.locked  %}
+                                    <form action="/unlock_card/{{ card.id }}" method="post">
+                                        <a class="dropdown-item" href="#" style="color: black;"
+                                           onclick="this.parentNode.submit();">Unlock</a>
+                                    </form>
+                                {% else %}
+                                    <form action="/lock_card/{{ card.id }}" method="post">
+                                        <a class="dropdown-item" href="#" onclick="this.parentNode.submit();"
+                                           style="color: black;">Lock</a>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

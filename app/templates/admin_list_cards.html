@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 style="margin-top: 32px;margin-bottom: -9px;">Manage cards</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <form action="/cards" method="get">
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-6 d-xxl-flex justify-content-xxl-center align-items-xxl-end"><input
+                        class="form-control" type="text"
+                        name="card_id"
+                        placeholder="Card ID">
+                </div>
+                <div class="col-md-6 d-xxl-flex justify-content-xxl-center"><input class="form-control" type="text"
+                                                                                   name="card_number"
+                                                                                   placeholder="Card number"></div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-6 col-xxl-6 d-xxl-flex justify-content-xxl-center"><input class="form-control"
+                                                                                             type="text" name="user_id"
+                                                                                             placeholder="User ID">
+                </div>
+                <div class="col-md-6 d-xxl-flex justify-content-xxl-center">
+                    <select class="fstdropdown-select" name="card_type">
+                        <optgroup label="Card type">
+                            <option value="" selected="selected">All</option>
+                            <option value="Visa Debit">Visa Debit</option>
+                            <option value="Visa Credit">Visa Credit</option>
+                            <option value="American Express">American Express</option>
+                            <option value="MasterCard Debit">MasterCard Debit</option>
+                            <option value="NAPAS ATM">NAPAS ATM</option>
+                        </optgroup>
+                    </select>
+
+                </div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 61px;">
+            <div class="row">
+                <div class="col-md-6 d-xxl-flex justify-content-xxl-center"><select name="locked">
+                    <optgroup label="Locked?">
+                        <option value="" selected="selected">All</option>
+                        <option value="True">True</option>
+                        <option value="False">False</option>
+                    </optgroup>
+                </select></div>
+                <div class="col-md-6 d-xxl-flex justify-content-xxl-center">
+                    <button class="btn btn-success d-xxl-flex" type="submit">Filter</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Number</th>
+                <th>User ID</th>
+                <th>Type</th>
+                <th>Locked</th>
+                <th>Balance</th>
+                <th>Locked</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for card in cards %}
+                <tr>
+                    <td>{{ card.id }}</td>
+                    <td>{{ card.number }}</td>
+                    <td><a href="/users/{{ card.user_id }}" style="color: blue;"></a>{{ card.user_id }}</td>
+                    <td>{{ card.type }}</td>
+                    <td>{{ card.locked }}</td>
+                    <td>{{ card.balance }}</td>
+                    <td>{{ card.locked }}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" aria-expanded="false"
+                                    data-bs-toggle="dropdown" type="button">Actions
+                            </button>
+                            <div class="dropdown-menu">
+                                {% if card.locked %}
+                                    <form action="/unlock_card/{{ card.id }}" method="post">
+                                        <a class="dropdown-item" href="#" style="color: black;"
+                                           onclick="this.parentNode.submit();">Unlock</a>
+                                    </form>
+                                {% else %}
+                                    <form action="/lock_card/{{ card.id }}" method="post">
+                                        <a class="dropdown-item" href="#" onclick="this.parentNode.submit();"
+                                           style="color: black;">Lock</a>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

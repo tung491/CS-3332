@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Reset PIN</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <form action="/reset_pin" method="POST">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center">
+                    <p>Reset PIN for card</p>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input class="form-control" type="password" name=pin placeholder="New PIN"></div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 d-xxl-flex justify-content-xxl-center align-items-xxl-center"><button class="btn btn-primary" type="submit">Submit</button></div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 style="margin-top: 32px;margin-bottom: -9px;">Register user</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <form action="/register_user" method="post">
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-6"><input class="form-control" type="text" placeholder="Name" name="name"></div>
+                <div class="col-md-6"><input class="form-control" type="email" name="email" placeholder="Email"></div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-6"><select class="form-select" name="gender">
+                    <optgroup label="Gender">
+                        <option value="Male" selected="">Male</option>
+                        <option value="Female">Female</option>
+                    </optgroup>
+                </select></div>
+                <div class="col-md-6"><input class="form-control" type="date" name="date_of_birth"></div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-6 d-lg-flex justify-content-lg-center" style="color: rgb(255,255,255);"><select
+                        class="form-select" name="security_question">
+                    <optgroup label="Security Question">
+                        <option value="What is your mother's name?" selected="">What is your mother's name?</option>
+                        <option value="What is your father's name?">What is your father's name?</option>
+                        <option value="What is your primary school?">What is your primary school?</option>
+                    </optgroup>
+                </select></div>
+                <div class="col-md-6"><input class="form-control" type="text" name="security_answer"
+                                             placeholder="Security Answer"></div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 d-lg-flex justify-content-lg-center align-items-lg-center">
+                    <button class="btn btn-primary" type="Submit">Submit</button>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    </form>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

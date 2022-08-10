@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 style="margin-top: 32px;margin-bottom: -9px;">Issue card</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <form action="/issue_card" method="post">
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <select class="fstdropdown-select" id="example" name="user_id">
+                        <option selected>Select user to issue card</option>
+                        {% for user_id, name in user_items %}
+                            <option value="{{ user_id }}">{{ user_id }} - {{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-12">
+                    <select class="fstdropdown-select" name="card_type">
+                        <option value="Visa Debit">Visa Debit</option>
+                        <option value="Visa Credit">Visa Credit</option>
+                        <option value="American Express">American Express</option>
+                        <option value="MasterCard Debit">MasterCard Debit</option>
+                        <option value="NAPAS ATM">NAPAS ATM</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-12"><input class="form-control" type="password" name="pin" placeholder="PIN"></div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col"><input class="form-control" type="password" name="repeat_pin"
+                                        placeholder="Repeat your PIN"></div>
+            </div>
+        </div>
+        <div class="container" style="margin-bottom: 17px;">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 d-lg-flex justify-content-lg-center align-items-lg-center">
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    </form>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% endblock %}

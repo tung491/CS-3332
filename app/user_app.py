@@ -73,7 +73,6 @@ def login():
         return flask.render_template("login_form.html")
 
 
-
 @app.route("/logout")
 @flask_login.login_required
 def logout():

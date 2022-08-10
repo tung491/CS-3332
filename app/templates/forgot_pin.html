@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+{% block main %}
+
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Forgot PIN</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <form action="/forgot_pin" method="POST">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input
+                        class="form-control" type="text" name="forgot_card_number"
+                        placeholder="The forgot card number"></div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 d-xxl-flex justify-content-xxl-center align-items-xxl-center">
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    </form>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+{% endblock %}

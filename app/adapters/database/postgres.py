@@ -1,19 +1,21 @@
-from datetime import datetime
-from datetime import datetime
-from typing import Optional, List
-
-from flask import current_app
+import sqlalchemy
+from dateutil import tz
+from pytz import timezone
 from sqlalchemy import (
-    create_engine, MetaData, Table, Column, Integer, Text, DateTime, select, Boolean, Float
+    create_engine, MetaData, Table, Column, Integer, Text, DateTime, select, Boolean, Float, Date, cast
 )
 
+from app.core.admin.models import (AdminCheckPasswordPayload, AdminCheckPasswordEvent, AdminGetOnePayload,
+                                   AdminGetOneEvent, Admin, AdminGetAllPayload, AdminGetAllEvent, AdminAddPayload,
+                                   AdminAddEvent, AdminDeletePayload, AdminDeleteEvent)
+from app.core.admin.ports.out_bound import AdminDatabaseInterface
 from app.core.cards.models import (CardChangePINPayload, CardChangePINEvent, CardCheckPINPayload, CardCheckPINEvent,
                                    CardChangeBalancePayload, CardChangeBalanceEvent, CardUnlockPayload, CardUnlockEvent,
                                    CardLockPayload, CardLockEvent, CardCreatePayload, CardCreateEvent,
                                    CardGetAllPayload, CardGetAllEvent, CardGetOnePayload, CardGetOneEvent, Card,
                                    CardGetExtendedOnePayload, CardGetExtendedOneEvent, ExtendedCard)
 from app.core.cards.ports.out_bound import CardDatabaseInterface
-from app.core.salts.models import SaltGetOnePayload, SaltGetOneEvent, SaltAddPayload, SaltAddEvent
+from app.core.salts.models import SaltGetOnePayload, SaltGetOneEvent, SaltAddPayload, SaltAddEvent, Salt
 from app.core.salts.ports.out_bound import SaltDatabaseInterface
 from app.core.transactions.models import (TransactionDeletePayload, TransactionDeleteEvent, TransactionAddPayload,
                                           TransactionAddEvent, TransactionGetAllPayload, TransactionGetAllEvent,
@@ -28,12 +30,14 @@ from app.settings import get_app_settings
 settings = get_app_settings()
 engine = create_engine(settings.POSTGRES_DATABASE_URL)
 metadata = MetaData()
+from_zone = tz.gettz('UTC')
+local_tz = timezone('Asia/Ho_Chi_Minh')
 
 users_table = Table(
         'users', metadata,
         Column('id', Text, primary_key=True),
         Column('name', Text),
-        Column('date_of_birth', DateTime),
+        Column('date_of_birth', Date),
         Column('email', Text),
         Column('gender', Text),
         Column('security_question', Text),
@@ -48,6 +52,7 @@ salts_table = Table(
 
 cards_table = Table(
         'cards', metadata,
+        Column('id', Text),
         Column('number', Integer, primary_key=True),
         Column('user_id', Text),
         Column('pin', Text),
@@ -65,7 +70,16 @@ transactions_table = Table(
         Column('pre_tx_balance', Float),
         Column('post_tx_balance', Float),
         Column('message', Text),
+        Column('user_id', Text),
         Column('timestamp', DateTime)
+)
+
+admins_table = Table(
+        'admins', metadata,
+        Column('id', Text, primary_key=True),
+        Column('email', Text),
+        Column('password_hash', Text),
+        Column('name', Text)
 )
 
 
@@ -102,16 +116,16 @@ class PostgresUserAdapter(UserDatabaseInterface, PostgresInterface):
     def get_all(self, payload: UserGetAllPayload) -> UserGetAllEvent:
         with self.connection.begin():
             query = users_table.select()
-
+            print(payload)
             if payload.name:
-                query = query.where(users_table.c.name == payload.name)
+                query = query.where(users_table.c.name.like(f"%{payload.name}%"))
             if payload.email:
-                query = query.where(users_table.c.email == payload.email)
+                query = query.where(users_table.c.email.like(f"%{payload.email}%"))
             if payload.gender:
                 query = query.where(users_table.c.gender == payload.gender)
-            if payload.date_of_birth:
-                query = query.where(users_table.c.date_of_birth == payload.date_of_birth)
-            users = query.fetchall()
+            if payload.user_id:
+                query = query.where(users_table.c.id.like(f"%{payload.user_id}%"))
+            users = self.connection.execute(query).fetchall()
             users = [
                 User(
                         name=user.name,
@@ -120,6 +134,7 @@ class PostgresUserAdapter(UserDatabaseInterface, PostgresInterface):
                         email=user.email,
                         security_question=user.security_question,
                         security_answer=user.security_answer,
+                        gender=user.gender
                 )
                 for user in users
             ]
@@ -131,16 +146,18 @@ class PostgresUserAdapter(UserDatabaseInterface, PostgresInterface):
         with self.connection.begin():
             self.connection.execute(
                     users_table.insert().values(
+                            id=payload.user.id,
                             name=payload.user.name,
                             date_of_birth=payload.user.date_of_birth,
                             email=payload.user.email,
                             security_question=payload.user.security_question,
                             security_answer=payload.user.security_answer,
+                            gender=payload.user.gender
                     )
             )
             user = self.get_all(UserGetAllPayload(name=payload.user.name)).users[0]
             return UserCreateEvent(
-                    user=user,
+                    data=user,
             )
 
     def delete_user(self, payload: UserDeletePayload) -> UserDeleteEvent:
@@ -187,11 +204,9 @@ class PostgresSaltAdapter(SaltDatabaseInterface, PostgresInterface):
             self.connection.execute(
                     salts_table.insert().values(
                             user_id=payload.user_id,
-                            salt=payload.salt,
                     )
             )
         return SaltAddEvent(
-                data=payload.salt
         )
 
     def delete_salt(self, payload: SaltGetOnePayload) -> SaltGetOneEvent:
@@ -207,22 +222,17 @@ class PostgresSaltAdapter(SaltDatabaseInterface, PostgresInterface):
 class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface):
     def get_one_transaction(self, payload: TransactionGetOnePayload) -> TransactionGetOneEvent:
         with self.connection.begin():
+            query = transactions_table.select()
             transaction = self.connection.execute(
-                    select(
-                            [transactions_table.c.id, transactions_table.c.debit_account_id,
-                             transactions_table.c.credit_account_id,
-                             transactions_table.c.withdrawal_amount, transactions_table.c.deposit_amount,
-                             transactions_table.c.pre_tx_balance,
-                             transactions_table.c.post_tx_balance, transactions_table.c.message,
-                             transactions_table.c.date]
-                    )
-                    .where(transactions_table.c.id == payload.trx_id)
+                    query.where(transactions_table.c.id == payload.trx_id)
             ).fetchone()
             if transaction is None:
                 raise Exception('Transaction not found')
             return TransactionGetOneEvent(
                     transaction=Transaction(
                             id=transaction.id,
+                            user_id=transaction.user_id,
+                            card_number=transaction.card_number,
                             debit_account_id=transaction.debit_account_id,
                             credit_account_id=transaction.credit_account_id,
                             withdrawal_amount=transaction.withdrawal_amount,
@@ -230,7 +240,7 @@ class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface
                             pre_tx_balance=transaction.pre_tx_balance,
                             post_tx_balance=transaction.post_tx_balance,
                             message=transaction.message,
-                            date=transaction.date
+                            timestamp=transaction.timestamp.replace(tzinfo=from_zone).astimezone(local_tz),
                     )
             )
 
@@ -238,23 +248,27 @@ class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface
         with self.connection.begin():
             query = transactions_table.select()
             if payload.card_number:
-                query = query.where(transactions_table.c.card_number == payload.card_number)
+                query = query.where(
+                    cast(transactions_table.c.card_number, sqlalchemy.Text).like(f"%{payload.card_number}%")
+                    )
             if payload.start_date:
-                query = query.where(transactions_table.c.date >= payload.start_date)
+                query = query.where(transactions_table.c.timestamp >= payload.start_date)
             if payload.end_date:
-                query = query.where(transactions_table.c.date <= payload.end_date)
-            transactions = query.fetchall()
+                query = query.where(transactions_table.c.timestamp <= payload.end_date)
+            if payload.user_id:
+                query = query.where(transactions_table.c.user_id.like(f"%{payload.user_id}%"))
+            transactions = self.connection.execute(query).fetchall()
             transactions = [
                 Transaction(
                         id=transaction.id,
-                        debit_account_id=transaction.debit_account_id,
-                        credit_account_id=transaction.credit_account_id,
-                        withdrawal_amount=transaction.withdrawal_amount,
-                        deposit_amount=transaction.deposit_amount,
+                        user_id=transaction.user_id,
+                        card_number=transaction.card_number,
+                        debit_amount=transaction.debit_amount,
+                        credit_amount=transaction.credit_amount,
                         pre_tx_balance=transaction.pre_tx_balance,
                         post_tx_balance=transaction.post_tx_balance,
                         message=transaction.message,
-                        date=transaction.date
+                        timestamp=transaction.timestamp.replace(tzinfo=from_zone).astimezone(local_tz),
                 )
                 for transaction in transactions
             ]
@@ -263,22 +277,23 @@ class PostgresTransactionAdapter(TransactionDatabaseInterface, PostgresInterface
             )
 
     def add_transaction(self, payload: TransactionAddPayload) -> TransactionAddEvent:
-        print(111)
         try:
             with self.connection.begin():
                 self.connection.execute(
                         transactions_table.insert().values(
                                 id=payload.transaction.id,
+                                user_id=payload.transaction.user_id,
                                 card_number=payload.transaction.card_number,
                                 credit_amount=payload.transaction.credit_amount,
                                 debit_amount=payload.transaction.debit_amount,
                                 pre_tx_balance=payload.transaction.pre_tx_balance,
                                 post_tx_balance=payload.transaction.post_tx_balance,
                                 message=payload.transaction.message,
-                                timestamp=payload.transaction.timestamp,
+                                timestamp=payload.transaction.timestamp
                         )
                 )
-        except Exception:
+        except Exception as e:
+            print(e)
             return TransactionAddEvent(
                     success=False,
                     message="Transaction could not be added"
@@ -311,7 +326,8 @@ class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
                                     cards_table.c.locked,
                                     cards_table.c.balance,
                                     cards_table.c.pin,
-                                    users_table.c.id, users_table.c.name, users_table.c.date_of_birth, users_table.c.email,
+                                    users_table.c.id, users_table.c.name, users_table.c.date_of_birth,
+                                    users_table.c.email,
                                     users_table.c.security_question, users_table.c.security_answer, users_table.c.gender
                                 ]
                         )
@@ -353,53 +369,55 @@ class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
 
     def get_one(self, payload: CardGetOnePayload) -> CardGetOneEvent:
         with self.connection.begin():
-            card = self.connection.execute(
-                    select(
-                            [
-                                cards_table.c.user_id,
-                                cards_table.c.number,
-                                cards_table.c.type,
-                                cards_table.c.locked,
-                                cards_table.c.balance,
-                                cards_table.c.pin
-                            ]
-                    )
-                    .where(cards_table.c.number == payload.card_number)
-            ).fetchone()
+            query = cards_table.select()
+            if payload.card_number:
+                query = query.where(cards_table.c.number == payload.card_number)
+            if payload.card_id:
+                query = query.where(cards_table.c.id == payload.card_id)
+            card = self.connection.execute(query).fetchone()
             if card is None:
                 raise Exception('Card not found')
             return CardGetOneEvent(
                     data=Card(
+                            id=card.id,
                             number=card.number,
                             user_id=card.user_id,
                             pin=card.pin,
                             type=card.type,
                             locked=card.locked,
-                            balance=card.balance,
+                            balance=card.balance
                     )
             )
 
     def get_all(self, payload: CardGetAllPayload) -> CardGetAllEvent:
         with self.connection.begin():
             query = cards_table.select()
+            if payload.card_id:
+                print(payload.card_id)
+                query = query.where(cards_table.c.id.like(f"%{payload.card_id}%"))
             if payload.user_id:
-                query = query.where(cards_table.c.user_id == payload.user_id)
+                query = query.where(cards_table.c.user_id.like(f"%{payload.user_id}%"))
             if payload.card_type:
                 query = query.where(cards_table.c.card_type == payload.card_type)
-            cards = query.fetchall()
+            if payload.card_number:
+                query = query.where(cast(cards_table.c.number, sqlalchemy.Text).like(f"%{payload.card_number}%"))
+            if payload.locked:
+                query = query.where(cards_table.c.locked == payload.locked)
+            cards = self.connection.execute(query).fetchall()
             cards = [
                 Card(
+                        id=card.id,
                         number=card.number,
                         user_id=card.user_id,
                         pin=card.pin,
-                        type=card.card_type,
+                        type=card.type,
                         locked=card.locked,
                         balance=card.balance,
                 )
                 for card in cards
             ]
             return CardGetAllEvent(
-                    cards=cards
+                    data=cards
             )
 
     def issues_card(self, payload: CardCreatePayload) -> CardCreateEvent:
@@ -415,7 +433,7 @@ class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
                     )
             )
         return CardCreateEvent(
-                card=payload.card
+                data=payload.card
         )
 
     def lock_card(self, payload: CardLockPayload) -> CardLockEvent:
@@ -476,5 +494,94 @@ class PostgresCardAdapter(CardDatabaseInterface, PostgresInterface):
                     )
             )
         return CardChangePINEvent(
-                data={'pin': payload.pin_hash}
+                success=True,
+        )
+
+
+class PostgresAdminAdapter(AdminDatabaseInterface, PostgresInterface):
+    def add_admin(self, payload: AdminAddPayload) -> AdminAddEvent:
+        with self.connection.begin():
+            query = admins_table.insert().values(
+                    name=payload.admin.name,
+                    email=payload.admin.email,
+                    password_hash=payload.admin.password_hash
+            )
+            self.connection.execute(query)
+        return AdminAddEvent(
+                data=payload.admin
+        )
+
+    def get_all(self, payload: AdminGetAllPayload) -> AdminGetAllEvent:
+        with self.connection.begin():
+            query = admins_table.select()
+            if payload.admin_id:
+                query = query.where(admins_table.c.id.like(f"%{payload.admin_id}%"))
+            if payload.name:
+                query = query.where(admins_table.c.name.like(f"%{payload.name}%"))
+            if payload.email:
+                query = query.where(admins_table.c.email.like(f"%{payload.email}%"))
+            admins = self.connection.execute(query).fetchall()
+            admins = [
+                Admin(
+                        id=admin.id,
+                        name=admin.name,
+                        email=admin.email,
+                        password_hash=admin.password_hash,
+                )
+                for admin in admins
+            ]
+            return AdminGetAllEvent(
+                    admins=admins
+            )
+
+    def get_one(self, payload: AdminGetOnePayload) -> AdminGetOneEvent:
+        with self.connection.begin():
+            query = select(
+                    [
+                        admins_table.c.id,
+                        admins_table.c.name,
+                        admins_table.c.email,
+                        admins_table.c.password_hash
+                    ]
+            )
+            if payload.admin_id:
+                query = query.where(admins_table.c.id == payload.admin_id)
+            else:
+                query = query.where(admins_table.c.email == payload.email)
+
+            user = self.connection.execute(query).fetchone()
+            if user is None or user.id is None:
+                return AdminGetOneEvent(
+                        success=False,
+                        message="Admin not found"
+                )
+        return AdminGetOneEvent(
+                data=Admin(
+                        id=user.id,
+                        name=user.name,
+                        email=user.email,
+                        password_hash=user.password_hash
+                )
+        )
+
+    def check_password(self, payload: AdminCheckPasswordPayload) -> AdminCheckPasswordEvent:
+        with self.connection.begin():
+            query = select(
+                    [
+                        admins_table.c.password_hash
+                    ]
+            )
+            query = query.where(admins_table.c.id == payload.admin_id)
+            user = self.connection.execute(query).fetchone()
+        return AdminCheckPasswordEvent(
+                match=user.password_hash == payload.password
+        )
+
+    def delete_admin(self, payload: AdminDeletePayload) -> AdminDeleteEvent:
+        with self.connection.begin():
+            self.connection.execute(
+                    admins_table.delete().where(admins_table.c.id == payload.admin_id)
+            )
+        return AdminDeleteEvent(
+                data={'id': payload.admin_id}
         )

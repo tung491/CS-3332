@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 from typing import Optional, List
 
@@ -13,6 +14,7 @@ class SortEnum(str, Enum):
 
 
 class Card(BaseModel):
+    id: Optional[str] = str(uuid.uuid4())
     number: int
     user_id: str
     pin: str
@@ -38,7 +40,8 @@ class ExtendedCardResponse(CardResponse):
 
 
 class CardGetOnePayload(BaseModel):
-    card_number: int
+    card_number: Optional[int]
+    card_id: Optional[str]
 
 
 class CardGetOneEvent(CardResponse):
@@ -54,8 +57,11 @@ class CardCreateEvent(CardResponse):
 
 
 class CardGetAllPayload(BaseModel):
-    user_id: Optional[str] = None
-    card_type: Optional[str] = None
+    card_id: Optional[str]
+    card_number: Optional[int]
+    user_id: Optional[str]
+    card_type: Optional[str]
+    locked: Optional[bool]
 
 
 class CardGetAllEvent(BaseModel):
@@ -66,19 +72,23 @@ class CardLockPayload(BaseModel):
     number: int
 
 
-class CardLockEvent(CardResponse):
-    ...
+class CardLockEvent(BaseModel):
+    success: bool = True
+    message: str = "Success"
+    error_code: int = -1
 
 
 class CardUnlockPayload(BaseModel):
     number: int
 
 
-class CardUnlockEvent(CardResponse):
-    ...
+class CardUnlockEvent(BaseModel):
+    success: bool = True
+    message: str = "Success"
+    error_code: int = -1
 
 
-class   CardChangeBalancePayload(BaseModel):
+class CardChangeBalancePayload(BaseModel):
     number: int
     balance: float
 
@@ -101,8 +111,10 @@ class CardChangePINPayload(BaseModel):
     pin_hash: str
 
 
-class CardChangePINEvent(CardResponse):
-    ...
+class CardChangePINEvent(BaseModel):
+    success: bool = True
+    message: str = "Success"
+    error_code: int = -1
 
 
 class CardGetExtendedOnePayload(BaseModel):

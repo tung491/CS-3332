@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5"></section>
+    <div class="row mb-5">
+        <div class="col-md-8 col-xl-6 text-center mx-auto" style="margin-top: 49px;">
+            <h2 style="margin-top: 32px;margin-bottom: -9px;">Add Admin</h2>
+            <p class="w-lg-50"></p>
+        </div>
+    </div>
+    <form action="/add_admin" method="post">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12"><input class="form-control" type="text" name="email" placeholder="Email" style="margin-bottom: 20px;"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12"><input class="form-control" type="text" name="name" placeholder="Name" style="margin-bottom: 20px;"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12"><input class="form-control" type="password" name="password" placeholder="Password" style="margin-bottom: 20px;"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12"><input class="form-control" type="password" name="repeat_password" placeholder="Repeat password" style="margin-bottom: 20px;"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 d-xxl-flex justify-content-xxl-center"><button class="btn btn-primary d-xxl-flex justify-content-xxl-center align-items-xxl-center" type="submit">Submit</button></div>
+            </div>
+        </div>
+    </form>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

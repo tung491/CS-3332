@@ -1,0 +1,79 @@
+{% extends 'layout.html' %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>Transaction history</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 d-md-flex justify-content-md-center align-items-md-center">
+                    <p>Start date</p>
+                </div>
+                <div class="col-md-4 d-md-flex justify-content-md-center align-items-md-center">
+                    <p>End date</p>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+        <form class="d-md-flex justify-content-md-center align-items-md-center" method="GET" action="/transactions">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 d-md-flex justify-content-md-center align-items-md-center"><input
+                            class="form-control" type="date" name="start_date" value="{{ start_date }}"></div>
+                    <div class="col-md-4"><input class="form-control" type="date" name="end_date"
+                                                 value="{{ end_date }}"></div>
+                    <div class="col-md-4 d-md-flex justify-content-md-center">
+                        <button class="btn btn-primary d-md-flex justify-content-md-center align-items-md-center"
+                                type="submit">Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Message</th>
+                <th>ID</th>
+                <th>Debit Amount</th>
+                <th>Credit Amount</th>
+                <th>Pre-transaction amount</th>
+                <th>Post-transaction amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.timestamp }}</td>
+                    <td>{{ transaction.message }}</td>
+                    <td>{{ transaction.id }}</td>
+                    <td>{{ transaction.debit_amount }}</td>
+                    <td>{{ transaction.credit_amount }}</td>
+                    <td>{{ transaction.pre_tx_balance }}</td>
+                    <td>{{ transaction.post_tx_balance }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

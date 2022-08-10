@@ -32,12 +32,14 @@
             </div>
         </div>
     </form>
-{% for category, message in get_flashed_messages(with_categories=True) %}
-      <div class="container">
-        <div class="row"><div class="col-md-12">
-    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
-</div></div>
-    </div>
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+                </div>
+            </div>
+        </div>
 
-{% endfor %}
+    {% endfor %}
 {% endblock %}

@@ -24,10 +24,10 @@ class UsersGetAllService(UserGetAllUseCase):
 
     def get_all(self, payload: UserGetAllPayload) -> UserGetAllEvent:
         try:
-            users = self.user_db_interface.get_all(payload)
+            resp = self.user_db_interface.get_all(payload)
         except Exception as e:
             raise e
-        return UserGetAllEvent(users)
+        return resp
 
 
 class UsersCreateService(UserCreateUseCase):
@@ -39,7 +39,7 @@ class UsersCreateService(UserCreateUseCase):
             user = self.user_db_interface.add_user(payload)
         except Exception as e:
             raise e
-        return UserGetOneEvent(user)
+        return UserGetOneEvent(user=payload.user)
 
 
 class UsersDeleteService(UserDeleteUseCase):
@@ -60,7 +60,7 @@ class UsersCheckSecurityAnswerService(UserCheckSecurityAnswerUseCase):
 
     def check_security_answer(self, payload: UserCheckSecurityAnswerPayload) -> UserCheckSecurityAnswerEvent:
         try:
-            match = self.user_db_interface.check_security_answer(payload)
+            resp = self.user_db_interface.check_security_answer(payload)
         except Exception as e:
             raise e
-        return UserCheckSecurityAnswerEvent(match=match)
+        return resp

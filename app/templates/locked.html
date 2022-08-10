@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+{% block main %}
+        <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2>This card is locked</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <form>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4 text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center">
+                    <p>This card is locked because of security reason.<br>Please contact our customer service to get the support.<br>Contact: your ex's phone number</p>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+    </form>
+    <div class="container d-xxl-flex justify-content-xxl-center" style="height: 300px;"><img src="{{ url_for('static', filename='sticker.webp') }}"></div>
+
+{% endblock %}

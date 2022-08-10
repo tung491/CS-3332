@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block main %}
+    <section class="position-relative py-4 py-xl-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-md-8 col-xl-6 text-center mx-auto">
+                    <h2 style="margin-top: 32px;margin-bottom: -9px;">Customers</h2>
+                    <p class="w-lg-50"></p>
+                </div>
+            </div>
+        </div>
+        <form action="/customers" method="get">
+            <div class="container" style="padding-bottom: 0px;margin-bottom: 22px;">
+                <div class="row">
+                    <div class="col-md-6 d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input
+                            class="form-control" type="text" name="user_id" placeholder="ID"></div>
+                    <div class="col-md-6 d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input
+                            class="form-control" type="text" name="name" placeholder="Name"></div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 d-xxl-flex justify-content-xxl-center align-items-xxl-center"><select
+                            class="form-select" name="gender">
+                        <option value="Male" selected="">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Others">Others</option>
+                    </select></div>
+                    <div class="col-md-6 d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input
+                            class="form-control" type="text" placeholder="Email" name="email"></div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4"></div>
+                    <div class="col-md-4 d-xxl-flex justify-content-xxl-center align-items-xxl-center">
+                        <button class="btn btn-success" type="submit">Filter</button>
+                    </div>
+                    <div class="col-md-4"></div>
+                </div>
+            </div>
+        </form>
+    </section>
+    <div class="table-responsive" style="margin-top: 52px;">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID<br></th>
+                <th>Name<br></th>
+                <th>Email</th>
+                <th>Date of birth<br></th>
+                <th>Gender<br></th>
+                <th>Security question<br></th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td><a href="/customers/{{ user.id }}" style="color:blue;">{{ user.id }}</a></td>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.date_of_birth }}</td>
+                        <td>{{ user.gender }}</td>
+                        <td>{{ user.security_question }}</td>
+                    </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

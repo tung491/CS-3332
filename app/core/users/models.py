@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, date
 from typing import Optional, List
 
@@ -7,7 +8,7 @@ from pydantic import BaseModel
 
 class User(BaseModel, UserMixin):
     name: str
-    id: Optional[str] = None
+    id: Optional[str] = str(uuid.uuid4())
     date_of_birth: date
     email: str
     gender: str
@@ -31,13 +32,13 @@ class UserGetOneEvent(BaseModel):
 
 
 class UserGetAllPayload(BaseModel):
+    user_id: Optional[str] = None
     name: Optional[str] = None
-    date_of_birth: Optional[datetime] = None
     email: Optional[str] = None
     gender: Optional[str] = None
 
 
-class UserGetAllEvent(UserResponse):
+class UserGetAllEvent(BaseModel):
     users: List[User]
 
 

@@ -26,10 +26,9 @@ class SaltGetOneEvent(Salt):
 
 class SaltAddPayload(BaseModel):
     user_id: str
-    salt: str = None
 
 
-class SaltAddEvent(SaltResponse):
+class SaltAddEvent(BaseModel):
     ...
 
 
