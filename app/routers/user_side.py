@@ -288,13 +288,14 @@ def query_transaction():
     # Convert date to datetime
     start_date = datetime.strptime(start_date, "%Y-%m-%d") if start_date else None
     end_date = datetime.strptime(end_date, "%Y-%m-%d") if end_date else None
+    transaction_adapter = PostgresTransactionAdapter()
+    transaction_get_all_service = TransactionsGetAllService(transaction_adapter)
+
     if start_date or end_date:
         if start_date and end_date:
             if start_date > end_date:
                 flash("Invalid input! Start date must be before end date", "danger")
                 return render_template("user_transactions.html")
-        transaction_adapter = PostgresTransactionAdapter()
-        transaction_get_all_service = TransactionsGetAllService(transaction_adapter)
         transactions = transaction_get_all_service.get_all(
                 TransactionGetAllPayload(
                         card_number=flask_login.current_user.number, start_date=start_date, end_date=end_date
@@ -306,7 +307,13 @@ def query_transaction():
                 end_date=end_date.strftime("%Y-%m-%d") if end_date else None,
         )
     else:
-        return render_template("user_transactions.html", transactions=[], start_date=None, end_date=None)
+        transactions = transaction_get_all_service.get_all(
+                TransactionGetAllPayload(
+                        card_number=flask_login.current_user.number,
+                )
+        ).transactions
+
+        return render_template("user_transactions.html", transactions=transactions, start_date=None, end_date=None)
 
 
 @user_transactions_app.route("/forgot_pin", methods=['GET', 'POST'])
