@@ -23,16 +23,33 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4"></div>
-                <div class="col-md-4 text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input class="form-control" type="password" name=pin placeholder="New PIN"></div>
+                <div class="col-md-4 text-center d-xxl-flex justify-content-xxl-center align-items-xxl-center"><input
+                        class="form-control" type="password" name=pin placeholder="New PIN"></div>
                 <div class="col-md-4"></div>
             </div>
         </div>
         <div class="container">
             <div class="row">
                 <div class="col-md-4"></div>
-                <div class="col-md-4 d-xxl-flex justify-content-xxl-center align-items-xxl-center"><button class="btn btn-primary" type="submit">Submit</button></div>
+                <div class="col-md-4 d-xxl-flex justify-content-xxl-center align-items-xxl-center">
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
                 <div class="col-md-4"></div>
             </div>
         </div>
     </form>
+
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <div class="alert alert-{{ category }}" role="alert"><span>{{ message }}</span></div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+
+    {% endfor %}
+
 {% endblock %}
